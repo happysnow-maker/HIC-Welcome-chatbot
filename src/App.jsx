@@ -363,8 +363,6 @@ const STOPWORDS = new Set([
   "인가요",
   "인가요?",
   "인가",
-  "인가요요",
-  "인가요요?",
   "뭐야",
   "뭐에요",
   "뭐예요",
@@ -381,6 +379,21 @@ const STOPWORDS = new Set([
   "뭐",
 ]);
 
+// 한국어 → 검색용 키워드 동의어 매핑
+const SYNONYMS = {
+  "부트캠프": "bootcamp",
+  "부트 캠프": "bootcamp",
+  "부트켐프": "bootcamp",
+  "bootcamp": "bootcamp",
+
+  "스파크": "spark",
+  "스파크프로그램": "spark",
+  "spark": "spark",
+
+  "지알아이": "global research immersion",
+  "gri": "global research immersion",
+};
+
 export const searchFAQPure = (faqObj, query) => {
   const raw = String(query || "").toLowerCase().trim();
   if (!raw) return [];
@@ -389,8 +402,10 @@ export const searchFAQPure = (faqObj, query) => {
   const cleaned = raw.replace(/[?.,!~]/g, " ");
   const parts = cleaned.split(/\s+/).filter(Boolean);
 
-  // 키워드만 추출 (조사/어미, 1글자 토큰 제거)
-  const tokens = parts.filter((t) => t.length >= 2 && !STOPWORDS.has(t));
+  // 키워드만 추출 (조사/어미, 1글자 토큰 제거) + 동의어 매핑
+  const tokens = parts
+    .filter((t) => t.length >= 2 && !STOPWORDS.has(t))
+    .map((t) => SYNONYMS[t] || t);
 
   const results = [];
 
@@ -433,6 +448,10 @@ export const __tests = {
     {
       name: "Bootcamp keyword should return results",
       fn: () => searchFAQPure(faqData, "Bootcamp").length > 0,
+    },
+    {
+      name: "부트캠프 keyword (Korean) should return Bootcamp results",
+      fn: () => searchFAQPure(faqData, "부트캠프").length > 0,
     },
     {
       name: "영어 keyword should match curriculum in Korean",
@@ -484,7 +503,7 @@ const HanyangFAQChatbot = () => {
       addBotMessage(responseText);
     } else {
       addBotMessage(
-        "죄송합니다. 검색 결과가 없습니다. 키워드(예: Bootcamp, 주전공, SPARK, 장학금)로 다시 시도해 주세요."
+        "죄송합니다. 검색 결과가 없습니다. 키워드(예: Bootcamp, 부트캠프, 주전공, SPARK, 장학금)로 다시 시도해 주세요."
       );
     }
     setInput("");
@@ -628,7 +647,7 @@ const HanyangFAQChatbot = () => {
 
           {/* 빠른 팁 */}
           <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
-            <div className="flex items센터 gap-2 font-medium text-slate-800">
+            <div className="flex items-center gap-2 font-medium text-slate-800">
               <Sparkles className="h-4 w-4" />
               빠른 팁
             </div>
@@ -672,7 +691,7 @@ const HanyangFAQChatbot = () => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  placeholder="예) Bootcamp 일정, 주전공 선택, SPARK 학점 인정"
+                  placeholder="예) 부트캠프 일정, 주전공 선택, SPARK 학점 인정"
                   aria-label="FAQ 검색"
                   className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white text-slate-900 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-[#2e3d86]/30 focus:border-[#2e3d86] shadow-sm"
                 />

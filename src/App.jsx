@@ -431,14 +431,14 @@ const HanyangFAQChatbot = () => {
       <aside className="w-80 shrink-0 h-full border-r border-slate-200 bg-[#f4f9fa] overflow-y-auto flex flex-col">
         {/* Brand (로고 + 아이콘 영역) */}
         <div className="sticky top-0 z-10 bg-[#f4f9fa] border-b border-slate-200">
-          <div className="px-6 py-6">
+          <div className="px-6 py-5">
             <div className="flex items-center gap-4">
               {/* 아이콘 */}
-              <div className="h-16 w-16 rounded-2xl bg-white flex items-center justify-center shadow-sm overflow-hidden border border-slate-200/60">
+              <div className="h-14 w-14 rounded-2xl bg-white flex items-center justify-center shadow-sm overflow-hidden border border-slate-200/60">
                 <SafeImg
                   sources={ICON_SOURCES}
                   alt="Hanyang Intercollege Icon"
-                  className="h-12 w-12 object-contain"
+                  className="h-10 w-10 object-contain"
                 />
               </div>
 
@@ -556,19 +556,19 @@ const HanyangFAQChatbot = () => {
       {/* Main */}
       <main className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="border-b border-white/10 bg-white/60 backdrop-blur-xl">
+        <div className="border-b border-white/10 bg-white/80 backdrop-blur-xl">
           <div className="px-8 py-6">
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">
               한양인터칼리지, 궁금하냥?
             </h2>
-            <p className="text-sm md:text-base text-slate-200/90 mt-1">
+            <p className="text-sm md:text-base text-slate-800 mt-1">
               궁금하신 모든 사항을 편하게 물어보세요!
             </p>
 
             {/* Search bar */}
             <div className="mt-5 flex gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <input
                   type="text"
                   value={input}
@@ -576,7 +576,7 @@ const HanyangFAQChatbot = () => {
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="ex) 주전공 선택 요건, Bootcamp 일정, SPARK 학점 인정"
                   aria-label="FAQ 검색"
-                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white/90 text-slate-900 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-[#2e3d86]/30 focus:border-[#2e3d86] shadow-sm"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white text-slate-900 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-[#2e3d86]/30 focus:border-[#2e3d86] shadow-sm"
                 />
               </div>
               <button
@@ -602,10 +602,10 @@ const HanyangFAQChatbot = () => {
               className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-2xl px-5 py-4 rounded-2xl shadow-sm backdrop-blur-sm whitespace-pre-wrap leading-relaxed text-sm md:text-[15px] ${
+                className={`max-w-2xl px-5 py-4 rounded-2xl shadow-sm whitespace-pre-wrap leading-relaxed text-sm md:text-[15px] border ${
                   msg.type === "user"
-                    ? "bg-white text-[#0b1b3a] rounded-br-sm border border-white/40"
-                    : "bg-white/10 text-slate-100 rounded-bl-sm border border-white/10"
+                    ? "bg-white text-[#0b1b3a] rounded-br-sm border-slate-200"
+                    : "bg-white text-[#0b1b3a] rounded-bl-sm border-slate-200"
                 }`}
               >
                 {msg.text}
@@ -616,10 +616,10 @@ const HanyangFAQChatbot = () => {
         </div>
 
         {/* Input */}
-        <div className="border-t border-white/10 bg-white/60 backdrop-blur-xl px-6 sm:px-8 py-5">
+        <div className="border-t border-white/10 bg-white/80 backdrop-blur-xl px-6 sm:px-8 py-5">
           <div className="flex gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
                 type="text"
                 value={input}
@@ -627,7 +627,7 @@ const HanyangFAQChatbot = () => {
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 placeholder="질문을 입력하세요..."
                 aria-label="질문 입력"
-                className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white/90 text-slate-900 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-[#2e3d86]/30 focus:border-[#2e3d86] shadow-sm"
+                className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white text-slate-900 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-[#2e3d86]/30 focus:border-[#2e3d86] shadow-sm"
               />
             </div>
             <button

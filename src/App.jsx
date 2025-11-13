@@ -6,7 +6,6 @@ import { Search, Send, Sparkles, ChevronRight, ChevronDown } from "lucide-react"
 // =============================
 const BRAND = "#2e3d86"; // primary
 const BRAND_HOVER = "#273575"; // hover
-const BRAND_RING = "#2e3d86"; // focus ring & borders (현재는 style 객체에서만 사용 가능)
 
 // =============================
 // Assets & Safe <img>
@@ -67,7 +66,10 @@ const faqData = {
     q: "한양인터칼리지 융합기초교육의 목적은 무엇인가요?",
     a: "글로벌 사회변화를 이끌어낼 수 있는 혁신적 사고 제안 및 창의 역량 개발과 국제화 시대에 맞춘 학생들의 영어 역량 강화가 목적입니다.",
   },
-  4: { q: "한양인터칼리지의 비전이 궁금합니다.", a: '한양인터칼리지의 비전은 "Change the World with Interdisciplinary Intelligence"입니다.' },
+  4: {
+    q: "한양인터칼리지의 비전이 궁금합니다.",
+    a: '한양인터칼리지의 비전은 "Change the World with Interdisciplinary Intelligence"입니다.',
+  },
   5: {
     q: "한양인터칼리지에서 추구하는 인재상은 무엇인가요?",
     a: '경계를 초월한 현상학적 경험으로 세상을 바꾸는 글로벌 탐험가이며, "Get out of your comfort zone to embrace the unknown"입니다.',
@@ -92,7 +94,10 @@ const faqData = {
     q: "1학년 공통 교육과정에는 어떤 과목들이 개설되어 있나요?",
     a: "Systems Thinking and Design Thinking (3학점), Algorithmic, Computational and Data Thinking (3학점), Mathematical Thinking (3학점), Unified Systems Science (4학점), Global Critical Anthropology (2학점), Life Project (3학점) 총 6개입니다.",
   },
-  11: { q: "1학년 공통 교육과정은 총 몇 학점으로 구성되나요?", a: "매 학기 총 18학점, 1학년 공통 교육과정은 총 36학점으로 구성됩니다." },
+  11: {
+    q: "1학년 공통 교육과정은 총 몇 학점으로 구성되나요?",
+    a: "매 학기 총 18학점, 1학년 공통 교육과정은 총 36학점으로 구성됩니다.",
+  },
   12: {
     q: "1학년 교육과정이 연단위로 운영된다는 것은 무엇을 의미하나요?",
     a: "총 6개 교과목이 1학기 및 2학기에 걸쳐 1년 과정으로 학습하는 방식입니다.",
@@ -425,34 +430,34 @@ const HanyangFAQChatbot = () => {
       {/* Sidebar */}
       <aside className="w-80 shrink-0 h-full border-r border-white/10 bg-white/5 backdrop-blur-xl overflow-y-auto flex flex-col">
         {/* Brand */}
-        <div className="sticky top-0 z-10 bg-white/10 backdrop-blur-xl border-b border-white/10">
-          <div className="px-6 py-5">
-            <div className="flex items-center gap-3">
+        <div className="sticky top-0 z-10 bg-sky-100/80 border-b border-sky-200">
+          <div className="px-6 py-6">
+            <div className="flex items-center gap-4">
               {/* 아이콘 */}
-              <div className="h-12 w-12 rounded-2xl bg-white/95 flex items-center justify-center shadow-sm overflow-hidden">
+              <div className="h-16 w-16 rounded-2xl bg-white flex items-center justify-center shadow-md overflow-hidden">
                 <SafeImg
                   sources={ICON_SOURCES}
                   alt="Hanyang Intercollege Icon"
-                  className="h-11 w-11 object-contain"
+                  className="h-14 w-14 object-contain"
                 />
               </div>
 
               {/* 로고 (텍스트 없이 크게) */}
-              <div>
+              <div className="flex items-center">
                 <SafeImg
                   sources={LOGO_SOURCES}
                   alt="Hanyang Intercollege Logo"
-                  className="h-10 md:h-11 object-contain"
+                  className="h-12 md:h-14 object-contain"
                 />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Categories + Popular + Tips + Contact */}
+        {/* Categories + Popular + Tips */}
         <div className="flex-1 p-4">
           {/* Categories */}
-          <h3 className="px-2 text-[11px] font-semibold text-slate-200/90 uppercase tracking-[0.12em]">
+          <h3 className="px-2 text-[11px] font-semibold text-slate-800/80 uppercase tracking-[0.12em]">
             카테고리
           </h3>
           <div className="mt-3 space-y-2">
@@ -461,11 +466,11 @@ const HanyangFAQChatbot = () => {
               return (
                 <div
                   key={cat}
-                  className="rounded-xl border border-white/10 bg-white/5 overflow-hidden"
+                  className="rounded-xl border border-white/10 bg-white/10 overflow-hidden"
                 >
                   <button
                     onClick={() => toggleSection(cat)}
-                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/10 transition"
+                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/20 transition"
                     aria-expanded={open}
                   >
                     <span className="flex-1">

@@ -1,2 +1,464 @@
-import React from 'react'
-export default function App(){return <div style={{color:'#fff',background:'linear-gradient(135deg,#121835 0%,#1a2360 45%,#202a78 100%)',height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800}}>HIC FAQ Starter Ready. Replace src/App.jsx with your chatbot code.</div>}
+import React, { useState, useRef, useEffect } from "react";
+import { Search, Send, Sparkles, ChevronRight, ChevronDown } from "lucide-react";
+
+// =============================
+// Brand palette (primary navy)
+// =============================
+const BRAND = "#2e3d86";           // primary
+const BRAND_HOVER = "#273575";     // hover
+const BRAND_RING = "#2e3d86";      // focus ring & borders
+
+// =============================
+// Assets & Safe <img>
+// =============================
+const LOGO_SOURCES = [
+  "/assets/hic-logo.svg",
+  "/assets/hic-logo.png",
+  "/mnt/data/hic-logo.svg.png", // chat sandbox fallback
+];
+const ICON_SOURCES = [
+  "/assets/hic-icon.png",
+  "/assets/hic-icon.svg",
+  "/mnt/data/hic-icon.png.png", // chat sandbox fallback
+];
+
+const SafeImg = ({ sources, alt, className }) => {
+  const [idx, setIdx] = useState(0);
+  const src = sources[Math.min(idx, sources.length - 1)];
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setIdx((v) => Math.min(v + 1, sources.length - 1))}
+    />
+  );
+};
+
+// =============================
+// Data (module-scoped so tests can access)
+// =============================
+const categories = {
+  "한양인터칼리지 비전 및 교육 철학": { icon: "💡", ids: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+  "한양인터칼리지 교육체계 및 졸업요건": { icon: "🎓", ids: [10, 11, 12, 13, 14, 15, 16] },
+  "1학년 수강신청(시간표)": { icon: "📅", ids: [17, 18, 19, 20, 21, 22] },
+  "주전공 진입": { icon: "🎯", ids: [23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45] },
+  "2~4학년 융합특화전공 프로그램": { icon: "🚀", ids: [46, 47, 48, 49, 50, 51, 52, 53] },
+  "한양인터칼리지 프로젝트 및 장학금": { icon: "💰", ids: [54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64] },
+  "예비 신입생 Bootcamp & SPARK": { icon: "⚡", ids: [65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75] },
+};
+
+const faqData = {
+  1: { q: "한양인터칼리지 1학년 융합기초교육은 100% 영어로 진행되나요?", a: "네, 1학년 융합기초교육은 전 과목 100% 영어 수업으로 진행됩니다." },
+  2: { q: "한양인터칼리지의 교육 운영 방식은 어떻게 되나요?", a: "기존의 강의 중심 수업을 탈피한 액션러닝 기반의 비판적 질문과 협력학습 중심으로 설계되어 운영됩니다." },
+  3: { q: "한양인터칼리지 융합기초교육의 목적은 무엇인가요?", a: "글로벌 사회변화를 이끌어낼 수 있는 혁신적 사고 제안 및 창의 역량 개발과 국제화 시대에 맞춘 학생들의 영어 역량 강화가 목적입니다." },
+  4: { q: "한양인터칼리지의 비전이 궁금합니다.", a: "한양인터칼리지의 비전은 \"Change the World with Interdisciplinary Intelligence\"입니다." },
+  5: { q: "한양인터칼리지에서 추구하는 인재상은 무엇인가요?", a: "경계를 초월한 현상학적 경험으로 세상을 바꾸는 글로벌 탐험가이며, \"Get out of your comfort zone to embrace the unknown\"입니다." },
+  6: { q: "한양인터칼리지의 핵심 융합 역량으로는 어떤 것들이 있나요?", a: "Changemaker, Foundation Builder, Scientific Thinker, Data Decision Maker, Creative Communicator가 있습니다." },
+  7: { q: "Foundation Builder가 이해해야 하는 기초는 무엇인가요?", a: "지식 간의 단순한 융합이 아닌 Human/Non-Human factors의 융합을 이해하는 과학철학 기초입니다." },
+  8: { q: "Scientific Thinker가 확립해야 하는 것이 무엇인가요?", a: "글로벌 현상에 대한 시스템 과학적 사고체계 확립입니다." },
+  9: { q: "Creative Communicator가 갖춰야 할 기술은 무엇인가요?", a: "창의적/혁신적 사고과정을 통해 자기 생각을 표현하여 다양한 관점을 조율하는 논리적 설득 기술입니다." },
+  10: { q: "1학년 공통 교육과정에는 어떤 과목들이 개설되어 있나요?", a: "Systems Thinking and Design Thinking (3학점), Algorithmic, Computational and Data Thinking (3학점), Mathematical Thinking (3학점), Unified Systems Science (4학점), Global Critical Anthropology (2학점), Life Project (3학점) 총 6개입니다." },
+  11: { q: "1학년 공통 교육과정은 총 몇 학점으로 구성되나요?", a: "매 학기 총 18학점, 1학년 공통 교육과정은 총 36학점으로 구성됩니다." },
+  12: { q: "1학년 교육과정이 연단위로 운영된다는 것은 무엇을 의미하나요?", a: "총 6개 교과목이 1학기 및 2학기에 걸쳐 1년 과정으로 학습하는 방식입니다." },
+  13: { q: "연단위 교육과정의 최종 성적은 언제 결정되나요?", a: "1학기 및 2학기 성과를 종합하여 1학년 2학기에 최종 성적이 산출됩니다." },
+  14: { q: "연단위 교육과정에서 1학기 성적은 어떻게 확인할 수 있나요?", a: "1학기 성적은 '장학금 산정'을 위해 산출되며, 개별 성적은 '성적 열람 및 이의신청/정정' 기간에만 확인 가능합니다." },
+  15: { q: "1학기 성적 열람 기간 이후에는 어떤 성적만 확인할 수 있나요?", a: "학기별 종합 장학평점만 확인할 수 있습니다." },
+  16: { q: "공식 성적증명서에는 1학기 누적평점평균이 어떻게 표기되나요?", a: "0점(공식 성적증명서에는 'I(Incomplete)'로 표기)으로 보이게 됩니다." },
+  17: { q: "1학년 공통 교육과정에 배정된 18학점의 수강신청은 어떻게 진행되나요?", a: "매 학기 수강신청 전에 한양인터칼리지 행정팀에서 일괄 수강신청 입력을 진행합니다." },
+  18: { q: "매 학기 수강 가능한 20학점 중 공통교육과정을 제외한 2학점은 어떻게 수강신청하나요?", a: "2학점 한도 내에서 학생이 직접 수강신청 가능합니다." },
+  19: { q: "2026학년도 1학기 1학년 수강신청일자가 언제인가요?", a: "2026년 2월 27일(금) 10:00입니다." },
+  20: { q: "1학년 1학기 시간표는 언제 확인할 수 있나요?", a: "2026년 2월 9일(월)~13일(금) Bootcamp 기간에 안내 후 홈페이지에 게시됩니다." },
+  21: { q: "1학년 때 희망 학과의 전공과목을 미리 수강하면 주전공 학점으로 인정되나요?", a: "주전공 학점으로 인정되지 않습니다. 주전공 확정 후 수강해야 인정됩니다." },
+  22: { q: "1학년 때 타 학부의 전공기초필수과목을 이수하는 경우 학점 인정은 어떻게 되나요?", a: "주전공학점으로는 인정되지 않고 전체 졸업학점으로만 인정됩니다." },
+  23: { q: "한양인터칼리지의 자유로운 주전공 선택제도가 무엇인가요?", a: "입학 후 성적이나 경쟁률 상관없이 자신이 원하는 학부를 선택할 수 있는 제도입니다." },
+  24: { q: "주전공 선택 시 인원 제한이 있나요?", a: "별도의 인원 제한 없이 신청 자격 충족 시 전원 선발됩니다." },
+  25: { q: "주전공 신청 자격 심의 및 배정은 언제 이루어지나요?", a: "2026학번의 경우 2027년 1월에 진행됩니다." },
+  26: { q: "주전공 신청 자격은 어떻게 되나요?", a: "직전학기 성적이 있는 상황에서 주전공 신청 학기에 재학 중이면 신청 가능합니다." },
+  27: { q: "주전공 배정이 확정되기 위한 최종 자격 요건은 무엇인가요?", a: "1학년 교양필수 교육과정 모두 이수, 누적평점 2.0 이상이어야 확정됩니다." },
+  28: { q: "1학년 공통 교육과정에서 F를 받으면 주전공 배정이 불가능한가요?", a: "2026학년도 신입생부터는 F 1과목이라도 주전공 배정이 불가능합니다." },
+  29: { q: "주전공 배정을 위해 1학년 공통 교육과정에서 받아야 할 최소 학점 기준은 무엇인가요?", a: "모든 교과목에서 D0 이상, 누적평점 2.0 이상이어야 가능합니다." },
+  30: { q: "주전공은 총 몇 번까지 선택할 수 있나요?", a: "재학 중 총 2회 선택 가능합니다." },
+  31: { q: "최초 주전공 선택은 언제 이루어지나요?", a: "입학 후 2학기 말 (10월 말~12월 사이)에 1차 최초 선택입니다." },
+  32: { q: "주전공 변경은 몇 차례 가능한가요?", a: "최초 배정 이후 졸업 전까지 한 번 변경 가능합니다." },
+  33: { q: "주전공 변경 시 이전에 이수한 학점은 어떻게 되나요?", a: "새로운 주전공의 교육과정에 따라 전공학점 또는 일반 선택학점으로 인정될 수 있습니다." },
+  34: { q: "전공을 선택하지 않은 상황에서 2학년 진급이 가능한가요?", a: "네, 진급 조건만 충족하면 가능합니다." },
+  35: { q: "데이터사이언스학부의 경우 2학년 진급 시 세부 전공이 정해지나요?", a: "2학년 주전공으로 선택 후 3학년 진급 시 세부 전공이 결정됩니다." },
+  36: { q: "한양인터칼리지 학생이 주전공으로 선택 가능한 단과대학은 어디인가요?", a: "한양인터칼리지, 경영대, 경제금융대, 공과대(반도체공학과 제외), 국제대, 생활과학대, 사회과학대, 자연과학대, 정책과학대, 산업융합학부, 인문과학대 내 학부를 선택 가능합니다." },
+  37: { q: "주전공 선택이 불가능한 학과는 어디인가요?", a: "의과대, 간호학과, 사범대, 음악대, 예술·체육대, 공과대 반도체공학과는 선택 불가합니다." },
+  38: { q: "한양인터칼리지학부 졸업학점은 몇 학점인가요?", a: "주전공 종류와 상관없이 140학점입니다." },
+  39: { q: "한양인터칼리지 학생이 반드시 이수해야 하는 다전공 의무가 있나요?", a: "네. 반드시 부전공 이상을 1개 이상 이수해야 합니다." },
+  40: { q: "타 단과대학을 주전공으로 선택해도 한양인터칼리지 1학년 교양필수를 들어야 하나요?", a: "네. 어느 학과를 선택해도 한양인터칼리지 1학년 교양필수 과목을 이수해야 합니다." },
+  41: { q: "나중에 주전공으로 선택하려는 학부의 1학년 전공기초필수 과목도 이수해야 하나요?", a: "아니요. 1학년 필수는 면제되나 2~4학년 필수는 이수해야 합니다." },
+  42: { q: "한양인터칼리지학부 졸업을 위해 필수 이수해야 하는 학점의 구성은 어떻게 되나요?", a: "1학년 36학점, 1학년 필수 프로젝트 3학점, 주전공 48학점, 다전공 36/24학점, 4학년 필수 12학점, 사회봉사 1학점, 커리어개발2 1학점, 핵심교양 4학점입니다." },
+  43: { q: "주전공은 최소 몇 학점을 이수해야 하나요?", a: "주전공 종류와 상관없이 48학점 이상(400단위 6학점 포함)을 이수해야 합니다." },
+  44: { q: "건축학부를 주전공으로 선택하면 몇 학점을 이수해야 하나요?", a: "전공과목 108학점 이상(100~300단위 90학점, 400단위 18학점 포함)을 취득해야 하며, 건축학인증 필수 선수강과목을 이수해야 합니다." },
+  45: { q: "졸업 시 학위는 어떻게 표기되나요?", a: "주전공을 선택한 단과대학과(부)의 명칭으로 학위가 수여되며, 부전공/다중전공은 졸업증명서에 함께 표기됩니다." },
+  46: { q: "한양인터칼리지 융합특화전공 프로그램 교육과정을 반드시 이수해야 하나요?", a: "네. 반드시 1개를 주전공 또는 다전공으로 선택해야 합니다." },
+  47: { q: "한양인터칼리지 융합특화전공 프로그램 종류는 어떻게 되나요?", a: "미래반도체공학, 융합의과학, 융합의공학, 인지융합과학, 미래사회디자인, 혁신공학경영 총 6가지입니다." },
+  48: { q: "주전공 및 다전공을 모두 한양인터칼리지 융합특화전공 프로그램으로 선택해도 되나요?", a: "네. 주전공 및 다전공 모두 한양인터칼리지 융합특화전공 프로그램을 선택해도 됩니다." },
+  49: { q: "'프로그램 전공'이란 무엇인가요?", a: "한양인터칼리지학부 프로그램 교육과정 및 타 단과대학 학부 전공핵심·특화 교육과정을 말합니다." },
+  50: { q: "전공 핵심·특화 프로그램은 무엇이며 언제부터 적용되나요?", a: "전공학과에서 정한 핵심 교과목들을 중심으로 50학점 내외로 구성된 프로그램입니다. 2026학번부터 다전공 선택 시 적용됩니다." },
+  51: { q: "프로그램 다중전공은 최소 몇 학점을 이수해야 하나요?", a: "400단위 6학점을 포함하여 36학점 이상을 이수해야 합니다." },
+  52: { q: "프로그램 부전공은 최소 몇 학점을 이수해야 하나요?", a: "24학점 이상을 이수해야 합니다." },
+  53: { q: "마이크로전공으로 한양인터칼리지 부전공을 대체할 수 있나요?", a: "아니요. 마이크로전공(12학점)은 한양인터칼리지 부전공을 대체할 수 없습니다." },
+  54: { q: "1학년 필수 프로젝트 교과목은 무엇인가요?", a: "Global Research Immersion으로 전공핵심 3학점이며, 모든 학생이 필수 이수해야 졸업 가능합니다." },
+  55: { q: "Global Research Immersion은 언제 진행되나요?", a: "1학년 2학기 겨울방학 때 진행됩니다." },
+  56: { q: "4학년 프로젝트 교과목은 몇 학점이며, 누가 이수해야 하나요?", a: "4학년 1학기 6학점, 4학년 2학기 6학점 총 12학점이며, 모든 학생이 필수로 이수해야 합니다." },
+  57: { q: "한양인터칼리지 프로그램을 주전공으로 선택할 경우, 2·3학년 프로젝트 교과목을 이수해야 하나요?", a: "네. 2·3학년 프로젝트 교과목(각각 3학점씩)을 필수로 이수해야 합니다." },
+  58: { q: "프로젝트 교과목이 전공학점으로 인정되나요?", a: "2·3학년 프로젝트는 전공학점 인정, 1학년과 4학년 프로젝트는 졸업 필수이나 전공학점 미포함입니다." },
+  59: { q: "타 단과대학을 주전공으로 선택한 학생이 2·3학년 프로젝트 교과목을 들을 수 있나요?", a: "네, 다전공으로 한양인터칼리지 프로그램을 이수하면 수강신청하여 다전공 학점을 취득할 수 있습니다." },
+  60: { q: "챌린지장학금의 1학년 2학기 지급 대상자 선정 기준은 무엇인가요?", a: "1학년 1학기 장학평점이 3.75 이상이어야 지급대상자 선정됩니다. (시행 세부 조건은 공지 참조)" },
+  61: { q: "프로젝트 장학금은 어떤 학생에게 지급되나요?", a: "6개의 융합특화전공 프로그램을 주전공으로 선택하고 2, 3학년 프로젝트 교과목을 이수한 학생입니다." },
+  62: { q: "챌린지장학금과 프로젝트 장학금 이중 지급이 가능한가요?", a: "네, 이중 수혜 가능합니다. 단, 2학년 진급 시 한양인터칼리지학부 내 프로그램을 주전공으로 선택한 학생만 대상입니다." },
+  63: { q: "타 단과대학 주전공 선택 시 프로젝트 장학금을 받을 수 있나요?", a: "아니요. 타 단과대학 주전공 학생은 프로젝트 장학금 지급 대상 제외입니다." },
+  64: { q: "외부장학재단 장학금 신청을 위해 성적표가 필요하면 어떻게 하나요?", a: "intercollege@hanyang.ac.kr로 메일을 보내면 공문을 발급받을 수 있습니다." },
+  65: { q: "SPARK 프로그램이 무엇인가요?", a: "Speaking Proficiency and Academic Real-world Knowledge(SPARK)로 1학년 대상 무료 영어능력 향상 집중 프로그램입니다." },
+  66: { q: "SPARK 프로그램의 수업 진행 요일과 시간은 언제인가요?", a: "매주 화요일, 목요일 오후 5시~8시 진행됩니다." },
+  67: { q: "SPARK 프로그램은 언제부터 언제까지 진행되나요?", a: "2026년 3월~12월(1학년 1학기, 여름방학, 2학기) 약 9개월간 진행됩니다." },
+  68: { q: "SPARK 프로그램 이수 시 학점 인정이 가능한가요?", a: "학기별 이수자 중 희망자에 한해 20학점 범위 내에서 학점 인정 가능합니다. (1학년 1학기: 1학점, 여름~2학기: 2학점)" },
+  69: { q: "SPARK 프로그램 학점 신청이 불가능한 경우는 언제인가요?", a: "공통교육과정 18학점 외에 다른 과목으로 이미 20학점을 채운 경우 신청 불가능합니다." },
+  70: { q: "2026 Bootcamp는 필수로 참석해야 하나요?", a: "네, 한양인터칼리지학부 신입생이라면 필수로 참석해야 합니다." },
+  71: { q: "Bootcamp는 언제 진행되나요?", a: "수시 합격생: 2026년 2월 9일(월)~13일(금) 총 5일간. 정시 합격생: 추후 공지 예정입니다." },
+  72: { q: "Bootcamp에서는 무엇을 배우게 되나요?", a: "다양한 학문적 관점과 기술을 융합하여 복잡한 문제를 다루는 분석적, 알고리즘적 사고체계를 학습합니다." },
+  73: { q: "Bootcamp 참여를 위한 필수 준비물이 있나요?", a: "1학년 교육과정을 위해 노트북이 반드시 필요합니다." },
+  74: { q: "지방에 사는 학생인데 Bootcamp 기간 동안 기숙사가 제공되나요?", a: "네, Bootcamp 기간 동안 기숙사가 제공되며, 주소지 원거리 기준으로 선발됩니다." },
+  75: { q: "모의토플 시험은 반드시 응시해야 하나요?", a: "네, 한양인터칼리지 신입생은 Bootcamp와 더불어 모의토플도 반드시 응시해야 합니다." },
+};
+
+const keywords = [
+  { text: "영어 수업", icon: "🌍" },
+  { text: "주전공 선택", icon: "🎯" },
+  { text: "졸업학점", icon: "📊" },
+  { text: "Bootcamp", icon: "⚡" },
+  { text: "SPARK", icon: "💬" },
+  { text: "장학금", icon: "💰" },
+  { text: "프로젝트", icon: "🏗️" },
+  { text: "다전공", icon: "🔀" },
+  { text: "성적", icon: "📈" },
+  { text: "수강신청", icon: "📋" },
+];
+
+// =============================
+// Pure search (exported for tests)
+// =============================
+export const searchFAQPure = (faqObj, query) => {
+  const lowerQuery = String(query || "").toLowerCase();
+  const results = [];
+  for (let id in faqObj) {
+    const { q, a } = faqObj[id];
+    const ql = q.toLowerCase();
+    const al = a.toLowerCase();
+    const score =
+      (ql.startsWith(lowerQuery) ? 3 : 0) +
+      (ql.includes(lowerQuery) ? 2 : 0) +
+      (al.includes(lowerQuery) ? 1 : 0);
+    if (score > 0) results.push({ id: Number(id), q, a, score });
+  }
+  return results.sort((a, b) => b.score - a.score || a.id - b.id);
+};
+
+// Lightweight self-tests (do not run automatically)
+export const __tests = {
+  cases: [
+    { name: "Bootcamp keyword should return results", fn: () => searchFAQPure(faqData, "Bootcamp").length > 0 },
+    { name: "영어 keyword should match curriculum in Korean", fn: () => searchFAQPure(faqData, "영어").length > 0 },
+    { name: "Unknown term should return empty array", fn: () => searchFAQPure(faqData, "nonexistentxyz").length === 0 },
+  ],
+  run() {
+    return this.cases.map((c) => ({ name: c.name, passed: !!c.fn() }));
+  },
+};
+
+/**
+ * HanyangFAQChatbot – Navy Elegant Redesign
+ */
+
+const HanyangFAQChatbot = () => {
+  const [messages, setMessages] = useState([
+    {
+      type: "bot",
+      text:
+        "안녕하세요! 한양인터칼리지에 입학하신 것을 축하합니다.\n\n이곳은 신입생 여러분의 모든 궁금증을 해결하는 공간입니다. 편하게 질문해주세요. 😊",
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [openSections, setOpenSections] = useState({});
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const searchFAQ = (query) => searchFAQPure(faqData, query);
+  const addBotMessage = (text) => setMessages((prev) => [...prev, { type: "bot", text }]);
+
+  const handleSearch = () => {
+    if (input.trim() === "") return;
+    setMessages((prev) => [...prev, { type: "user", text: input }]);
+    const results = searchFAQ(input);
+
+    if (results.length > 0) {
+      const responseText = results
+        .map((item, idx) => `Q${idx + 1}. ${item.q}\n→ ${item.a}`)
+        .join("\n\n");
+      addBotMessage(responseText);
+    } else {
+      addBotMessage("죄송합니다. 검색 결과가 없습니다. 다른 키워드로 시도해주세요.");
+    }
+    setInput("");
+  };
+
+  const handleCategorySelect = (category) => {
+    const faqIds = categories[category].ids;
+    const faqs = faqIds.map((id) => faqData[id]);
+
+    const categoryResponse = faqs
+      .map((faq, idx) => `Q${idx + 1}. ${faq.q}\n→ ${faq.a}`)
+      .join("\n\n");
+
+    addBotMessage(`${categories[category].icon} ${category}\n\n${categoryResponse}`);
+  };
+
+  const handleKeywordClick = (keyword) => {
+    setMessages((prev) => [...prev, { type: "user", text: keyword }]);
+    const results = searchFAQ(keyword);
+
+    if (results.length > 0) {
+      const responseText = results
+        .map((item, idx) => `Q${idx + 1}. ${item.q}\n→ ${item.a}`)
+        .join("\n\n");
+      addBotMessage(responseText);
+    } else {
+      addBotMessage("죄송합니다. 검색 결과가 없습니다. 다른 키워드로 시도해주세요.");
+    }
+  };
+
+  const toggleSection = (key) =>
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  return (
+    <div className="flex h-screen bg-[linear-gradient(135deg,#121835_0%,#1a2360_45%,#202a78_100%)] text-slate-100">
+      {/* Sidebar */}
+      <aside className="w-80 shrink-0 h-full border-r border-white/10 bg-white/5 backdrop-blur-xl overflow-y-auto">
+        {/* Brand */}
+        <div className="sticky top-0 z-10 bg-white/10 backdrop-blur-xl border-b border-white/10">
+          <div className="px-6 py-5">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-2xl bg-white/95 flex items-center justify-center shadow-sm overflow-hidden">
+                <SafeImg
+                  sources={ICON_SOURCES}
+                  alt="Hanyang Intercollege Icon"
+                  className="h-10 w-10 object-contain"
+                />
+              </div>
+              <div>
+                <SafeImg
+                  sources={LOGO_SOURCES}
+                  alt="Hanyang Intercollege Logo"
+                  className="h-5 object-contain"
+                />
+                <p className="text-xs/5 text-slate-200">Hanyang Intercollege</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Categories */}
+        <div className="p-4">
+          <h3 className="px-2 text-[11px] font-semibold text-slate-200/90 uppercase tracking-[0.12em]">
+            카테고리
+          </h3>
+          <div className="mt-3 space-y-2">
+            {Object.entries(categories).map(([cat, data]) => {
+              const open = !!openSections[cat];
+              return (
+                <div
+                  key={cat}
+                  className="rounded-xl border border-white/10 bg-white/5 overflow-hidden"
+                >
+                  <button
+                    onClick={() => toggleSection(cat)}
+                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/10 transition"
+                    aria-expanded={open}
+                  >
+                    <span className="flex items-center gap-2 text-sm font-medium text-slate-100">
+                      <span className="text-base">{data.icon}</span>
+                      {cat}
+                    </span>
+                    {open ? (
+                      <ChevronDown className="h-4 w-4 text-slate-300" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-slate-300" />
+                    )}
+                  </button>
+                  {open && (
+                    <div className="px-3 pb-3">
+                      <button
+                        onClick={() => handleCategorySelect(cat)}
+                        className="w-full mt-2 text-left text-[13px] rounded-lg bg-white/10 border border-white/10 px-3 py-2 hover:bg-white/20 transition"
+                      >
+                        전체 보기{" "}
+                        <span className="ml-2 text-slate-300">
+                          ({data.ids.length})
+                        </span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Popular */}
+          <h3 className="mt-6 px-2 text-[11px] font-semibold text-slate-200/90 uppercase tracking-[0.12em]">
+            인기 검색
+          </h3>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {keywords.map((kw, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleKeywordClick(kw.text)}
+                className="px-3 py-1.5 rounded-full border border-white/10 bg-white/10 hover:bg-white/20 text-xs font-medium text-slate-100 transition"
+              >
+                <span className="mr-1">{kw.icon}</span>
+                {kw.text}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer badge + contact */}
+        <div className="mt-auto p-4">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-xs text-slate-300">
+            <div className="flex items-center gap-2 font-medium text-slate-100">
+              <Sparkles className="h-4 w-4" />
+              빠른 팁
+            </div>
+            <p className="mt-2 leading-relaxed">
+              키워드를 눌러 바로 검색하거나, 좌측 카테고리를 펼쳐서 전체 FAQ를
+              확인해 보세요.
+            </p>
+          </div>
+          <div className="mt-3 p-4 border-t border-white/10 text-xs text-slate-300 text-center">
+            기타 문의사항이 있는 경우에는{" "}
+            <a
+              href="mailto:intercollege@hanyang.ac.kr"
+              className="text-white font-semibold hover:underline"
+            >
+              intercollege@hanyang.ac.kr
+            </a>{" "}
+            로 문의 남겨주세요.
+          </div>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <main className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="border-b border-white/10 bg-white/5 backdrop-blur-xl">
+          <div className="px-8 py-6">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+              한양인터칼리지, 궁금하냥?
+            </h2>
+            <p className="text-sm md:text-base text-slate-200/90 mt-1">
+              궁금하신 모든 사항을 편하게 물어보세요!
+            </p>
+
+            {/* Search bar */}
+            <div className="mt-5 flex gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  placeholder="ex) 주전공 선택 요건, Bootcamp 일정, SPARK 학점 인정"
+                  aria-label="FAQ 검색"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white/90 text-slate-900 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-[#2e3d86]/30 focus:border-[#2e3d86] shadow-sm"
+                />
+              </div>
+              <button
+                onClick={handleSearch}
+                className="inline-flex items-center gap-2 rounded-2xl px-5 py-3.5 font-semibold border border-white/10 text-white hover:shadow-md active:scale-[0.99] transition"
+                style={{ backgroundColor: BRAND }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = BRAND_HOVER)
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = BRAND)
+                }
+                aria-label="검색"
+              >
+                <Send className="h-5 w-5" />
+                검색
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-8 space-y-5">
+          {messages.map((msg, idx) => (
+            <div
+              key={idx}
+              className={`flex ${
+                msg.type === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
+              <div
+                className={`max-w-2xl px-5 py-4 rounded-2xl shadow-sm backdrop-blur-sm whitespace-pre-wrap leading-relaxed text-sm md:text-[15px] ${
+                  msg.type === "user"
+                    ? "bg-white text-[#0b1b3a] rounded-br-sm border border-white/40"
+                    : "bg-white/10 text-slate-100 rounded-bl-sm border border-white/10"
+                }`}
+              >
+                {msg.text}
+              </div>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input (sticky for mobile as well) */}
+        <div className="border-t border-white/10 bg-white/5 backdrop-blur-xl px-6 sm:px-8 py-5">
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                placeholder="질문을 입력하세요..."
+                aria-label="질문 입력"
+                className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white/90 text-slate-900 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-[#2e3d86]/30 focus:border-[#2e3d86] shadow-sm"
+              />
+            </div>
+            <button
+              onClick={handleSearch}
+              className="inline-flex items-center gap-2 rounded-2xl px-6 py-3.5 font-semibold border border-white/10 text-white hover:shadow-md active:scale-[0.99] transition"
+              style={{ backgroundColor: BRAND }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = BRAND_HOVER)
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = BRAND)
+              }
+            >
+              <Send className="h-5 w-5" />
+              전송
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default HanyangFAQChatbot;

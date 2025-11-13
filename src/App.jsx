@@ -428,26 +428,26 @@ const HanyangFAQChatbot = () => {
   return (
     <div className="flex h-screen bg-[linear-gradient(135deg,#121835_0%,#1a2360_45%,#202a78_100%)] text-slate-100">
       {/* Sidebar */}
-      <aside className="w-80 shrink-0 h-full border-r border-white/10 bg-white/5 backdrop-blur-xl overflow-y-auto flex flex-col">
-        {/* Brand */}
-        <div className="sticky top-0 z-10 bg-sky-100/80 border-b border-sky-200">
+      <aside className="w-80 shrink-0 h-full border-r border-slate-200 bg-[#f4f9fa] overflow-y-auto flex flex-col">
+        {/* Brand (로고 + 아이콘 영역) */}
+        <div className="sticky top-0 z-10 bg-[#f4f9fa] border-b border-slate-200">
           <div className="px-6 py-6">
             <div className="flex items-center gap-4">
               {/* 아이콘 */}
-              <div className="h-16 w-16 rounded-2xl bg-white flex items-center justify-center shadow-md overflow-hidden">
+              <div className="h-20 w-20 rounded-2xl bg-white flex items-center justify-center shadow-sm overflow-hidden border border-slate-200/60">
                 <SafeImg
                   sources={ICON_SOURCES}
                   alt="Hanyang Intercollege Icon"
-                  className="h-14 w-14 object-contain"
+                  className="h-18 w-18 object-contain"
                 />
               </div>
 
-              {/* 로고 (텍스트 없이 크게) */}
+              {/* 로고 */}
               <div className="flex items-center">
                 <SafeImg
                   sources={LOGO_SOURCES}
                   alt="Hanyang Intercollege Logo"
-                  className="h-12 md:h-14 object-contain"
+                  className="h-16 md:h-20 object-contain"
                 />
               </div>
             </div>
@@ -457,7 +457,7 @@ const HanyangFAQChatbot = () => {
         {/* Categories + Popular + Tips */}
         <div className="flex-1 p-4">
           {/* Categories */}
-          <h3 className="px-2 text-[11px] font-semibold text-slate-800/80 uppercase tracking-[0.12em]">
+          <h3 className="px-2 text-[11px] font-semibold text-slate-700 uppercase tracking-[0.12em]">
             카테고리
           </h3>
           <div className="mt-3 space-y-2">
@@ -466,15 +466,15 @@ const HanyangFAQChatbot = () => {
               return (
                 <div
                   key={cat}
-                  className="rounded-xl border border-white/10 bg-white/10 overflow-hidden"
+                  className="rounded-xl border border-slate-200 bg-white overflow-hidden"
                 >
                   <button
                     onClick={() => toggleSection(cat)}
-                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/20 transition"
+                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 transition"
                     aria-expanded={open}
                   >
                     <span className="flex-1">
-                      <span className="flex items-center gap-2 text-sm font-medium text-slate-100 whitespace-normal leading-snug break-words">
+                      <span className="flex items-center gap-2 text-sm font-medium text-slate-800 whitespace-normal leading-snug break-words">
                         <span className="text-base shrink-0">{data.icon}</span>
                         <span>
                           {cat === "2~4학년 융합특화전공 프로그램" ? (
@@ -490,19 +490,19 @@ const HanyangFAQChatbot = () => {
                       </span>
                     </span>
                     {open ? (
-                      <ChevronDown className="h-4 w-4 text-slate-300" />
+                      <ChevronDown className="h-4 w-4 text-slate-500" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 text-slate-300" />
+                      <ChevronRight className="h-4 w-4 text-slate-500" />
                     )}
                   </button>
                   {open && (
                     <div className="px-3 pb-3">
                       <button
                         onClick={() => handleCategorySelect(cat)}
-                        className="w-full mt-2 text-left text-[13px] rounded-lg bg-white/10 border border-white/10 px-3 py-2 hover:bg-white/20 transition"
+                        className="w-full mt-2 text-left text-[13px] rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 hover:bg-slate-100 transition text-slate-800"
                       >
                         전체 보기{" "}
-                        <span className="ml-2 text-slate-300">({data.ids.length})</span>
+                        <span className="ml-2 text-slate-500">({data.ids.length})</span>
                       </button>
                     </div>
                   )}
@@ -512,7 +512,7 @@ const HanyangFAQChatbot = () => {
           </div>
 
           {/* Popular */}
-          <h3 className="mt-6 px-2 text-[11px] font-semibold text-slate-200/90 uppercase tracking-[0.12em]">
+          <h3 className="mt-6 px-2 text-[11px] font-semibold text-slate-700 uppercase tracking-[0.12em]">
             인기 검색
           </h3>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -520,7 +520,7 @@ const HanyangFAQChatbot = () => {
               <button
                 key={idx}
                 onClick={() => handleKeywordClick(kw.text)}
-                className="px-3 py-1.5 rounded-full border border-white/10 bg-white/10 hover:bg-white/20 text-xs font-medium text-slate-100 transition"
+                className="px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-medium text-slate-700 transition"
               >
                 <span className="mr-1">{kw.icon}</span>
                 {kw.text}
@@ -529,8 +529,8 @@ const HanyangFAQChatbot = () => {
           </div>
 
           {/* 빠른 팁 */}
-          <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4 text-xs text-slate-300">
-            <div className="flex items-center gap-2 font-medium text-slate-100">
+          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+            <div className="flex items-center gap-2 font-medium text-slate-800">
               <Sparkles className="h-4 w-4" />
               빠른 팁
             </div>
@@ -541,11 +541,11 @@ const HanyangFAQChatbot = () => {
         </div>
 
         {/* Footer contact */}
-        <div className="p-4 border-t border-white/10 text-xs text-slate-200 text-center">
+        <div className="p-4 border-t border-slate-200 text-xs text-slate-600 text-center bg-[#f4f9fa]">
           기타 문의사항이 있는 경우에는{" "}
           <a
             href="mailto:intercollege@hanyang.ac.kr"
-            className="text-white font-semibold hover:underline"
+            className="text-[#2e3d86] font-semibold hover:underline"
           >
             intercollege@hanyang.ac.kr
           </a>{" "}

@@ -260,9 +260,9 @@ const HanyangFAQChatbot = () => {
                 <SafeImg
                   sources={LOGO_SOURCES}
                   alt="Hanyang Intercollege Logo"
-                  className="h-5 object-contain"
+                  className="h-7 object-contain"
                 />
-                <p className="text-xs/5 text-slate-200">Hanyang Intercollege</p>
+                <p className="text-sm text-slate-200 font-semibold">Hanyang Intercollege</p>
               </div>
             </div>
           </div>
@@ -286,7 +286,7 @@ const HanyangFAQChatbot = () => {
                     className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/10 transition"
                     aria-expanded={open}
                   >
-                    <span className="flex items-center gap-2 text-sm font-medium text-slate-100">
+                    <span className="flex items-center gap-2 text-sm font-medium text-slate-100 whitespace-normal leading-snug break-words">
                       <span className="text-base">{data.icon}</span>
                       {cat}
                     </span>

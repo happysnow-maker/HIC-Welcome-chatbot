@@ -253,14 +253,14 @@ const HanyangFAQChatbot = () => {
                 <SafeImg
                   sources={ICON_SOURCES}
                   alt="Hanyang Intercollege Icon"
-                  className="h-10 w-10 object-contain"
+                  className="h-15 w-15 object-contain"
                 />
               </div>
               <div>
                 <SafeImg
-                  sources={LOGO_SOURCES}
+                  sources={_SOURCES}
                   alt="Hanyang Intercollege Logo"
-                  className="h-7 object-contain"
+                  className="h-10 object-contain"
                 />
                 <p className="text-sm text-slate-200 font-semibold">Hanyang Intercollege</p>
               </div>

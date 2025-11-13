@@ -318,19 +318,94 @@ const keywords = [
 // =============================
 // Pure search (exported for tests)
 // =============================
+const STOPWORDS = new Set([
+  "은",
+  "는",
+  "이",
+  "가",
+  "을",
+  "를",
+  "에",
+  "에서",
+  "으로",
+  "에게",
+  "도",
+  "만",
+  "까지",
+  "부터",
+  "보다",
+  "처럼",
+  "같이",
+  "하고",
+  "랑",
+  "및",
+  "와",
+  "과",
+  "요",
+  "인가요",
+  "인가요?",
+  "인가",
+  "인가요요",
+  "인가요요?",
+  "뭐야",
+  "뭐에요",
+  "뭐예요",
+  "알려줘",
+  "알려주세요",
+  "해주세요",
+  "해줘",
+  "궁금해요",
+  "궁금합니다",
+  "언제",
+  "어떻게",
+  "왜",
+  "무엇",
+  "뭐",
+]);
+
 export const searchFAQPure = (faqObj, query) => {
-  const lowerQuery = String(query || "").toLowerCase();
+  const raw = String(query || "").toLowerCase().trim();
+  if (!raw) return [];
+
+  // 문장형 입력에서 구두점 제거 + 토큰 분리
+  const cleaned = raw.replace(/[?.,!~]/g, " ");
+  const parts = cleaned.split(/\s+/).filter(Boolean);
+
+  // 키워드만 추출 (조사/어미, 1글자 토큰 제거)
+  const tokens = parts.filter((t) => t.length >= 2 && !STOPWORDS.has(t));
+
   const results = [];
+
   for (let id in faqObj) {
     const { q, a } = faqObj[id];
     const ql = q.toLowerCase();
     const al = a.toLowerCase();
-    const score =
-      (ql.startsWith(lowerQuery) ? 3 : 0) +
-      (ql.includes(lowerQuery) ? 2 : 0) +
-      (al.includes(lowerQuery) ? 1 : 0);
-    if (score > 0) results.push({ id: Number(id), q, a, score });
+
+    let score = 0;
+
+    if (tokens.length > 0) {
+      // 여러 키워드 기반 스코어링
+      tokens.forEach((tok) => {
+        if (ql.includes(tok)) {
+          score += ql.startsWith(tok) ? 6 : 4;
+        }
+        if (al.includes(tok)) {
+          score += 2;
+        }
+      });
+    } else {
+      // 키워드 분리가 안 될 경우, 원래 방식으로 fallback
+      score =
+        (ql.startsWith(raw) ? 3 : 0) +
+        (ql.includes(raw) ? 2 : 0) +
+        (al.includes(raw) ? 1 : 0);
+    }
+
+    if (score > 0) {
+      results.push({ id: Number(id), q, a, score });
+    }
   }
+
   return results.sort((a, b) => b.score - a.score || a.id - b.id);
 };
 
@@ -360,7 +435,7 @@ const HanyangFAQChatbot = () => {
     {
       type: "bot",
       text:
-        "안녕하세요! 한양인터칼리지에 입학하신 것을 축하합니다.\n\n이곳은 신입생 여러분의 모든 궁금증을 해결하는 공간입니다. 편하게 질문해주세요. 😊",
+        "안녕하세요! 한양인터칼리지에 입학하신 것을 축하합니다.\n\n이곳은 신입생 여러분의 모든 궁금증을 해결하는 공간입니다. 편하게 질문해 주세요. 😊\n\n예) Bootcamp 일정, 주전공 선택 요건, SPARK 학점 인정",
     },
   ]);
   const [input, setInput] = useState("");
@@ -376,7 +451,8 @@ const HanyangFAQChatbot = () => {
   }, [messages]);
 
   const searchFAQ = (query) => searchFAQPure(faqData, query);
-  const addBotMessage = (text) => setMessages((prev) => [...prev, { type: "bot", text }]);
+  const addBotMessage = (text) =>
+    setMessages((prev) => [...prev, { type: "bot", text }]);
 
   const handleSearch = () => {
     if (input.trim() === "") return;
@@ -389,7 +465,9 @@ const HanyangFAQChatbot = () => {
         .join("\n\n");
       addBotMessage(responseText);
     } else {
-      addBotMessage("죄송합니다. 검색 결과가 없습니다. 다른 키워드로 시도해주세요.");
+      addBotMessage(
+        "죄송합니다. 검색 결과가 없습니다. 키워드(예: Bootcamp, 주전공, SPARK, 장학금)로 다시 시도해 주세요."
+      );
     }
     setInput("");
   };
@@ -415,7 +493,9 @@ const HanyangFAQChatbot = () => {
         .join("\n\n");
       addBotMessage(responseText);
     } else {
-      addBotMessage("죄송합니다. 검색 결과가 없습니다. 다른 키워드로 시도해주세요.");
+      addBotMessage(
+        "죄송합니다. 검색 결과가 없습니다. 다른 키워드로 시도해 주세요."
+      );
     }
   };
 
@@ -535,7 +615,7 @@ const HanyangFAQChatbot = () => {
               빠른 팁
             </div>
             <p className="mt-2 leading-relaxed">
-              키워드를 눌러 바로 검색하거나, 좌측 카테고리를 펼쳐서 전체 FAQ를 확인해 보세요.
+              키워드로 검색하거나, 좌측 카테고리를 펼쳐서 전체 FAQ를 확인해 보세요.
             </p>
           </div>
         </div>
@@ -562,7 +642,7 @@ const HanyangFAQChatbot = () => {
               한양인터칼리지, 궁금하냥?
             </h2>
             <p className="text-sm md:text-base text-slate-800 mt-1">
-              궁금하신 모든 사항을 편하게 물어보세요!
+              궁금하신 모든 사항을 키워드로 물어보세요.
             </p>
 
             {/* Search bar */}
@@ -574,7 +654,7 @@ const HanyangFAQChatbot = () => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  placeholder="ex) 주전공 선택 요건, Bootcamp 일정, SPARK 학점 인정"
+                  placeholder="예) Bootcamp 일정, 주전공 선택, SPARK 학점 인정"
                   aria-label="FAQ 검색"
                   className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white text-slate-900 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-[#2e3d86]/30 focus:border-[#2e3d86] shadow-sm"
                 />
@@ -613,34 +693,6 @@ const HanyangFAQChatbot = () => {
             </div>
           ))}
           <div ref={messagesEndRef} />
-        </div>
-
-        {/* Input */}
-        <div className="border-t border-white/10 bg-white/80 backdrop-blur-xl px-6 sm:px-8 py-5">
-          <div className="flex gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="질문을 입력하세요..."
-                aria-label="질문 입력"
-                className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white text-slate-900 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-[#2e3d86]/30 focus:border-[#2e3d86] shadow-sm"
-              />
-            </div>
-            <button
-              onClick={handleSearch}
-              className="inline-flex items-center gap-2 rounded-2xl px-6 py-3.5 font-semibold border border-white/10 text-white hover:shadow-md active:scale-[0.99] transition"
-              style={{ backgroundColor: BRAND }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = BRAND_HOVER)}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = BRAND)}
-            >
-              <Send className="h-5 w-5" />
-              전송
-            </button>
-          </div>
         </div>
       </main>
     </div>

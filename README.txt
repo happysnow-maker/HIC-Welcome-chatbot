@@ -1,0 +1,1 @@
+Put hic-logo.svg and hic-icon.png here (optional).
